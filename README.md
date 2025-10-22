@@ -558,7 +558,7 @@ CREATE TABLE IF NOT EXISTS backend.jupyter_sessions (
 );
 ```
 
-Schema is automatically created by `init-db.sql` on first run.
+Schema is automatically created by `init-backend-db.sql` on first run.
 
 ---
 
