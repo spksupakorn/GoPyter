@@ -1,0 +1,117 @@
+version: "3.8"
+
+services:
+  # PostgreSQL database for user management
+  postgres:
+    image: postgres:16-alpine
+    container_name: jupyterhub-postgres
+    environment:
+      POSTGRES_DB: jupyterhub
+      POSTGRES_USER: jupyterhub
+      POSTGRES_PASSWORD: W9eaRGjYM6
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-backend-db.sql:/docker-entrypoint-initdb.d/init-backend-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - jupyterhub-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jupyterhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # JupyterHub with custom authenticator
+  jupyterhub:
+    build:
+      context: ./jupyterhub
+      dockerfile: Dockerfile
+    container_name: jupyterhub
+    volumes:
+      - ./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
+      - jupyterhub_data:/srv/jupyterhub
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"
+    environment:
+      DOCKER_NETWORK_NAME: jupyterhub_jupyterhub-network
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: jupyterhub
+      POSTGRES_USER: jupyterhub
+      POSTGRES_PASSWORD: W9eaRGjYM6
+      JWT_SECRET: gyyVzKyGeymVgnSeGYk22RKx4yEVQ6Q7
+      JUPYTERHUB_API_TOKEN: 36b17568e4a64cb7b8d75b6de6c6f09d
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - jupyterhub-network
+    command: >
+      sh -c "jupyterhub upgrade-db && jupyterhub -f /srv/jupyterhub/jupyterhub_config.py"
+
+  # Go Gin Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jupyterhub-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: jupyterhub
+      DB_PASSWORD: W9eaRGjYM6
+      DB_NAME: jupyterhub
+      JWT_SECRET: gyyVzKyGeymVgnSeGYk22RKx4yEVQ6Q7
+      JUPYTERHUB_API_URL: http://jupyterhub:8000
+      JUPYTERHUB_PUBLIC_URL: http://localhost:8000
+      JUPYTERHUB_API_TOKEN: 36b17568e4a64cb7b8d75b6de6c6f09d
+      GIN_MODE: release
+    depends_on:
+      - postgres
+      - jupyterhub
+    networks:
+      - jupyterhub-network
+
+  # Frontend (React/Vue example - you can customize)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jupyterhub-frontend
+    ports:
+      - "3000:80"
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8080
+      REACT_APP_JUPYTERHUB_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - jupyterhub-network
+
+  # Nginx reverse proxy (optional but recommended)
+  nginx:
+    image: nginx:alpine
+    container_name: jupyterhub-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+      - jupyterhub
+    networks:
+      - jupyterhub-network
+
+volumes:
+  postgres_data:
+  jupyterhub_data:
+
+networks:
+  jupyterhub-network:
+    driver: bridge

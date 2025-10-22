@@ -1,0 +1,166 @@
+.App {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: white;
+}
+
+.login-container h1 {
+  margin-bottom: 2rem;
+}
+
+.login-container h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.login-container form {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  min-width: 350px;
+}
+
+.login-container input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.login-container button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 0.5rem;
+}
+
+.login-container button[type="submit"]:hover {
+  background: #45a049;
+}
+
+.register-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: white;
+}
+
+.register-link p {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.link-button {
+  background: transparent !important;
+  color: #ffeb3b !important;
+  text-decoration: underline;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem;
+  transition: color 0.3s;
+}
+
+.link-button:hover {
+  color: #fdd835 !important;
+}
+
+.App-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.App-header button {
+  padding: 0.5rem 1rem;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.main-content {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.jupyter-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.jupyter-section h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.jupyter-section button {
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  background: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.jupyter-section button:hover {
+  background: #0b7dda;
+}
+
+.stop-btn {
+  background: #f44336 !important;
+}
+
+.stop-btn:hover {
+  background: #da190b !important;
+}
+
+.session-active {
+  padding: 1rem;
+  background: #e8f5e9;
+  border-radius: 5px;
+  margin: 1rem 0;
+}
+
+.session-inactive {
+  padding: 1rem;
+  background: #fff3e0;
+  border-radius: 5px;
+  margin: 1rem 0;
+}
+
+.error {
+  padding: 1rem;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 5px;
+  margin: 1rem 0;
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JupyterHub SSO Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        #iframe-container {
+            margin-top: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            height: 600px;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JupyterHub SSO Integration Example</h1>
+        <p>This demonstrates how to integrate your frontend with JupyterHub using SSO.</p>
+        
+        <div>
+            <h3>Step 1: Login to Backend</h3>
+            <label>Username: <input type="text" id="username" value="admin"></label><br><br>
+            <label>Password: <input type="password" id="password" value="admin123"></label><br><br>
+            <button onclick="login()">Login</button>
+        </div>
+
+        <div id="status" class="info" style="display: none;"></div>
+
+        <div style="margin-top: 20px; display: none;" id="jupyter-section">
+            <h3>Step 2: Open JupyterHub</h3>
+            <button onclick="openJupyter()">Open JupyterHub</button>
+            <button onclick="openInNewTab()">Open in New Tab</button>
+        </div>
+    </div>
+
+    <div id="iframe-container" style="display: none;">
+        <iframe id="jupyter-frame"></iframe>
+    </div>
+
+    <script>
+        let backendToken = null;
+        let jupyterToken = null;
+        let jupyterUrl = null;
+        let username = null;
+
+        async function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const statusDiv = document.getElementById('status');
+
+            try {
+                statusDiv.style.display = 'block';
+                statusDiv.innerHTML = '<p>Logging in...</p>';
+                statusDiv.className = 'info';
+
+                const response = await fetch('http://localhost:8080/api/v1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+                backendToken = data.token;
+                username = data.user.username;
+
+                statusDiv.innerHTML = `<p class="success">✓ Login successful! User: ${username}</p>`;
+                document.getElementById('jupyter-section').style.display = 'block';
+
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">✗ Login failed: ${error.message}</p>`;
+            }
+        }
+
+        async function getJupyterSession() {
+            const statusDiv = document.getElementById('status');
+
+            try {
+                statusDiv.innerHTML += '<p>Creating JupyterHub session...</p>';
+
+                const response = await fetch(`http://localhost:8080/api/v1/jupyter/login?token=${backendToken}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to create JupyterHub session');
+                }
+
+                const data = await response.json();
+                jupyterToken = data.token;
+                jupyterUrl = data.server_url;
+
+                statusDiv.innerHTML += `<p class="success">✓ JupyterHub session created!</p>`;
+                statusDiv.innerHTML += `<p><strong>Server URL:</strong> ${jupyterUrl}</p>`;
+                statusDiv.innerHTML += `<p><strong>Token:</strong> ${jupyterToken.substring(0, 20)}...</p>`;
+
+                return true;
+            } catch (error) {
+                statusDiv.innerHTML += `<p class="error">✗ Failed to create JupyterHub session: ${error.message}</p>`;
+                return false;
+            }
+        }
+
+        async function openJupyter() {
+            if (!await getJupyterSession()) {
+                return;
+            }
+
+            // Open JupyterHub in iframe with token authentication
+            const iframe = document.getElementById('jupyter-frame');
+            const iframeContainer = document.getElementById('iframe-container');
+            
+            // JupyterHub will authenticate using the token in the URL
+            iframe.src = `${jupyterUrl}?token=${jupyterToken}`;
+            iframeContainer.style.display = 'block';
+
+            // Scroll to iframe
+            iframeContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function openInNewTab() {
+            if (!await getJupyterSession()) {
+                return;
+            }
+
+            // Open in new tab with token authentication
+            window.open(`${jupyterUrl}?token=${jupyterToken}`, '_blank');
+        }
+    </script>
+</body>
+</html>

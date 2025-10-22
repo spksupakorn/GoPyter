@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+README.md
+*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# JupyterHub runtime files (should use volumes)
+jupyterhub.sqlite
+jupyterhub_cookie_secret
+jupyterhub-proxy.pid
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Tests
+tests/
+test/
+pytest_cache/
+.pytest_cache/
