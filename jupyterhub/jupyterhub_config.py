@@ -105,6 +105,15 @@ c.DockerSpawner.network_name = os.environ.get('DOCKER_NETWORK_NAME', 'jupyterhub
 c.DockerSpawner.remove = True
 c.DockerSpawner.debug = True
 
+# Podman compatibility: auto-negotiate API version
+c.DockerSpawner.client_kwargs = {'version': 'auto'}
+
+# Use the host's Docker/Podman socket
+c.DockerSpawner.use_internal_ip = True
+c.DockerSpawner.extra_host_config = {
+    'network_mode': os.environ.get('DOCKER_NETWORK_NAME', 'jupyterhub-network')
+}
+
 # Notebook directory
 c.DockerSpawner.notebook_dir = '/home/jovyan/work'
 c.DockerSpawner.volumes = {

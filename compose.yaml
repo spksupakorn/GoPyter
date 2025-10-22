@@ -1,3 +1,20 @@
+# GoPyter - Docker & Podman Compatible Configuration
+# 
+# This compose file works with both Docker and Podman without modifications.
+# 
+# Network Name: The network is automatically created as "gopyter_jupyterhub-network"
+#               based on the folder name. If your folder has a different name,
+#               update DOCKER_NETWORK_NAME in the jupyterhub service environment.
+#
+# Quick Start:
+#   - Docker:  docker compose up -d --build
+#   - Podman:  podman-compose up -d --build
+#   - Universal: ./start.ps1 (Windows) or ./start.sh (Linux/Mac)
+#
+# For more information, see:
+#   - DOCKER_PODMAN_COMPATIBILITY.md
+#   - README.md
+
 version: "3.8"
 
 services:
@@ -22,20 +39,25 @@ services:
       timeout: 5s
       retries: 5
 
-  # JupyterHub with custom authenticator
+  # JupyterHub with custom authenticator (Docker & Podman compatible)
   jupyterhub:
     build:
       context: ./jupyterhub
       dockerfile: Dockerfile
     container_name: jupyterhub
+    privileged: true
     volumes:
       - ./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py
       - jupyterhub_data:/srv/jupyterhub
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker socket (works for both Docker and Podman)
+      - /var/run/docker.sock:/var/run/docker.sock:z
     ports:
       - "8000:8000"
     environment:
-      DOCKER_NETWORK_NAME: jupyterhub_jupyterhub-network
+      # Auto-detects network name based on project folder
+      # Override by setting COMPOSE_PROJECT_NAME environment variable
+      DOCKER_NETWORK_NAME: gopyter_jupyterhub-network
+      DOCKER_HOST: unix:///var/run/docker.sock
       POSTGRES_HOST: postgres
       POSTGRES_DB: jupyterhub
       POSTGRES_USER: jupyterhub

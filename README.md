@@ -234,34 +234,40 @@ User → Frontend → Backend → JupyterHub API
 
 ---
 
-## 📋 Prerequisites
+## � Prerequisites
 
-### Required Software
-- **Docker**: Version 20.10+
-- **Docker Compose**: Version 2.0+
-- **Git**: For cloning repository
+### Option 1: Docker (Recommended for most users)
+- **Docker Engine** 24.0+ and **Docker Compose** 2.0+
+- 4GB+ RAM available
+- 20GB+ disk space
+- Linux, macOS, or Windows with WSL2
 
-### System Requirements
-- **RAM**: Minimum 4GB (8GB+ recommended for multiple concurrent users)
-- **CPU**: 2+ cores recommended
-- **Disk**: 10GB+ free space
-- **OS**: Linux, macOS, or Windows with WSL2
+### Option 2: Podman (Docker alternative)
+- **Podman** 4.0+ and **podman-compose**
+- Podman Desktop (for Windows/Mac) or Podman CLI (Linux)
+- 4GB+ RAM available
+- 20GB+ disk space
 
-### Network Requirements
-- **Ports**: 3000, 8000, 8080, 5432 must be available
-- **Internet**: Required for pulling Docker images
+**Note:** This project is fully compatible with both Docker and Podman. See [PODMAN_SETUP.md](PODMAN_SETUP.md) for Podman-specific instructions.
+
+### Common Requirements
+- **Git** (for cloning the repository)
+- **Python 3.8+** (for podman-compose if using Podman)
+- Internet connection (for pulling images)
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the Repository
+### Universal Method (Recommended - Works for Both Docker and Podman)
+
+#### 1. Clone the Repository
 ```bash
 git clone <your-repository-url>
-cd jupyterhub
+cd GoPyter
 ```
 
-### 2. Configure Environment Variables
+#### 2. Configure Environment Variables
 Update `compose.yaml` with your secrets (IMPORTANT for production):
 
 ```yaml
@@ -277,7 +283,7 @@ JUPYTERHUB_API_TOKEN: "your-api-token-here"  # Must be SAME as backend
 JWT_SECRET: "your-random-secret-here"  # Must be SAME as backend
 ```
 
-**⚠️ IMPORTANT**: The `JUPYTERHUB_API_TOKEN` **must be set in both backend AND JupyterHub** services with the **exact same value**. Missing this will cause "403 Forbidden" errors.
+**⚠️ IMPORTANT**: The `JUPYTERHUB_API_TOKEN` **must be set in both backend AND JupyterHub** services with the **exact same value**.
 
 **Generate secure secrets:**
 ```bash
@@ -288,22 +294,61 @@ openssl rand -hex 32
 openssl rand -hex 16
 ```
 
-### 3. Start All Services
-```bash
-docker compose up -d --build
+#### 3. Start All Services (Auto-detects Docker or Podman)
+
+**Windows (PowerShell):**
+```powershell
+.\start.ps1
 ```
 
-This will:
-- Build backend Go application
-- Build JupyterHub with custom configuration
-- Pull PostgreSQL and frontend images
-- Create Docker network
-- Initialize database schema
-- Start all services
-
-### 4. Verify Services are Running
+**Linux/Mac:**
 ```bash
-docker compose ps
+chmod +x start.sh
+./start.sh
+```
+
+The universal startup script will:
+- ✅ Automatically detect Docker or Podman
+- ✅ Configure the correct network name
+- ✅ Check daemon/machine status
+- ✅ Start all services
+- ✅ Display service URLs and credentials
+
+#### 4. Access the Application
+
+Open your browser to:
+- **Frontend**: http://localhost:3000
+- **JupyterHub**: http://localhost:8000
+- **Backend API**: http://localhost:8080
+
+**Default credentials:**
+- Username: `admin`
+- Password: `admin123`
+- ⚠️ **Change these immediately!** See [CHANGE_ADMIN_CREDENTIALS.md](CHANGE_ADMIN_CREDENTIALS.md)
+
+---
+
+### Alternative: Manual Start
+
+If you prefer to use native commands:
+
+**With Docker:**
+```bash
+docker compose up -d --build
+docker compose ps  # Verify services
+```
+
+**With Podman:**
+```bash
+podman-compose up -d --build
+podman-compose ps  # Verify services
+```
+
+> 💡 **Tip**: The same `compose.yaml` works for both Docker and Podman! See [DOCKER_PODMAN_COMPATIBILITY.md](DOCKER_PODMAN_COMPATIBILITY.md) for more details.
+
+---
+
+### Post-Setup (Both Docker and Podman)
 ```
 
 Expected output:
