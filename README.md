@@ -578,30 +578,49 @@ c.Authenticator.allow_all = True
 
 ### Database Schema
 
-The system uses two main tables:
+The system uses two main tables in the `backend` schema:
 
 **`backend.users`** (User authentication)
 ```sql
 CREATE TABLE IF NOT EXISTS backend.users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,  -- Bcrypt hashed
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,           -- Bcrypt hashed
+    full_name VARCHAR(255),                        -- Optional full name
+    is_active BOOLEAN DEFAULT true,                -- Account status
+    is_admin BOOLEAN DEFAULT false,                -- Admin privileges
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indexes for performance
+CREATE INDEX idx_users_username ON backend.users (username);
+CREATE INDEX idx_users_email ON backend.users (email);
 ```
 
 **`backend.jupyter_sessions`** (Session tracking)
 ```sql
 CREATE TABLE IF NOT EXISTS backend.jupyter_sessions (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES backend.users(id),
-    jupyterhub_url VARCHAR(255),
-    status VARCHAR(50),
+    user_id INTEGER REFERENCES backend.users(id) ON DELETE CASCADE,
+    session_token VARCHAR(512) UNIQUE NOT NULL,    -- Session identifier
+    jupyter_token VARCHAR(512),                     -- JupyterHub API token
     started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    stopped_at TIMESTAMP
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP,                           -- Session expiration
+    is_active BOOLEAN DEFAULT true                  -- Session status
 );
+
+-- Indexes for performance
+CREATE INDEX idx_sessions_token ON backend.jupyter_sessions (session_token);
+CREATE INDEX idx_sessions_user_id ON backend.jupyter_sessions (user_id);
 ```
+
+**Default Admin User:**
+- Username: `admin`
+- Password: `admin123` (⚠️ **CHANGE THIS IN PRODUCTION!**)
+- Email: `admin@example.com`
 
 Schema is automatically created by `init-backend-db.sql` on first run.
 
